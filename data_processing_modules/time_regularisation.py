@@ -41,12 +41,25 @@ def regularise_data(regular_x, list_of_np_arrays):
             elif (x_from_regular_x_index == (number_of_regular_time_steps - 1)):
                 if (np.any(np.isclose(a_np_data_array[:,0], x_from_regular_x, rtol=1e-5))):
                     first_corresponding_y = a_np_data_array[a_np_data_array[:,0] == x_from_regular_x, 1]
+                    # what if we have more than 1 matching x? take only the first one.
+                    if (len(first_corresponding_y) > 1):
+                        first_corresponding_y = first_corresponding_y[0]
                     regularised_data_array[x_from_regular_x_index, data_array_index+1] = first_corresponding_y
                 else:
-                    # If no corresponding x is found in the series, then the last
-                    # point is assumed to correspond directly to the last point from
-                    # the passed numpy array
-                    regularised_data_array[x_from_regular_x_index, data_array_index+1] = a_np_data_array[-1,1]    
+                        # if we have a bigger x value available, then we take that value
+                        # and interpolate against it and what preceeded it
+                    if (np.any(a_np_data_array[:,0] > x_from_regular_x)):
+                        # find the first x value that is bigger than our regularised value
+                        index_within_data_array = np.flatnonzero(a_np_data_array[:,0] > x_from_regular_x)[0]
+                        regularised_data_array[x_from_regular_x_index, data_array_index + 1] = linearly_interpolate(
+                            x_from_regular_x, a_np_data_array[index_within_data_array - 1, 0], x_from_data_array,
+                            a_np_data_array[index_within_data_array - 1, 1],
+                            a_np_data_array[index_within_data_array, 1])
+                    else: 
+                        # If no corresponding x is found in the series, then the last
+                        # point is assumed to correspond directly to the last point from
+                        # the passed numpy array
+                        regularised_data_array[x_from_regular_x_index, data_array_index+1] = a_np_data_array[-1,1]    
                 
             else:
                 for index_within_data_array, x_from_data_array in enumerate(a_np_data_array[:,0]):
