@@ -40,9 +40,15 @@ def regularise_data(regular_x, list_of_np_arrays):
                 # value as the first time from the passed numpy array
                 regularised_data_array[x_from_regular_x_index, data_array_index + 1] = a_np_data_array[x_from_regular_x_index,1]
             elif (x_from_regular_x_index == (number_of_regular_time_steps - 1)):
-                # likewise, the last point is assumed to correspond directly to the
-                # the last point from the passed numpy array
-                regularised_data_array[x_from_regular_x_index, data_array_index+1] = a_np_data_array[-1,1]
+                if (np.any(a_np_data_array[:,0] == x_from_regular_x)):
+                    first_corresponding_y = a_np_data_array[a_np_data_array[:,0] == x_from_regular_x, 1]
+                    regularised_data_array[x_from_regular_x_index, data_array_index+1] = first_corresponding_y
+                else:
+                    # If no corresponding x is found in the series, then the last
+                    # point is assumed to correspond directly to the last point from
+                    # the passed numpy array
+                    regularised_data_array[x_from_regular_x_index, data_array_index+1] = a_np_data_array[-1,1]    
+                
             else:
                 for index_within_data_array, x_from_data_array in enumerate(a_np_data_array[:,0]):
                     # find where the regularised x point lies within the given numpy
